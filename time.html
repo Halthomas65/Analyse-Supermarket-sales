@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Line Graph with D3.js</title>
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <style>
+    #lineGraph {
+      width: 100%;
+    }
+  </style>
+</head>
+<body>
+  <h1>Line Graph with D3.js</h1>
+  <div id="lineGraph"></div>
+
+  <script>
+    // Sử dụng D3.js để đọc và hiển thị dữ liệu từ file CSV
+    d3.csv("data.csv")
+      .then(function (data) {
+        // Lọc dữ liệu để chỉ chứa cột "Date"
+        const dateData = data.map(function (d) {
+          return {
+            Date: d["Date"],
+          };
+        });
+
+        // Đếm số lượng giá trị theo ngày
+        const countByDate = d3.rollup(
+          dateData,
+          v => v.length,
+          d => d.Date
+        );
+
+        // Biến đổi dữ liệu thành mảng các đối tượng
+        const lineGraphData = Array.from(countByDate, ([key, value]) => ({ date: key, count: value }));
+
+        // Sắp xếp lại mảng theo ngày
+        lineGraphData.sort((a, b) => new Date(a.date) - new Date(b.date));
+
+        // Kích thước và margin của biểu đồ
+        const margin = { top: 20, right: 20, bottom: 30, left: 50 };
+        const width = document.getElementById("lineGraph").offsetWidth - margin.left - margin.right;
+        const height = 400 - margin.top - margin.bottom;
+
+        // Tạo biểu đồ
+        const svg = d3.select("#lineGraph")
+          .append("svg")
+          .attr("width", width + margin.left + margin.right)
+          .attr("height", height + margin.top + margin.bottom);
+
+        // Xác định các biến đổi cho dữ liệu và trục
+        const x = d3.scaleTime()
+          .domain(d3.extent(lineGraphData, d => new Date(d.date)))
+          .range([margin.left, width - margin.right]);
+
+        const y = d3.scaleLinear()
+          .domain([0, d3.max(lineGraphData, d => d.count)])
+          .nice()
+          .range([height - margin.bottom, margin.top]);
+
+        const xAxis = d3.axisBottom(x);
+        const yAxis = d3.axisLeft(y);
+
+        // Vẽ đường
+        const line = d3.line()
+          .x(d => x(new Date(d.date)))
+          .y(d => y(d.count));
+
+        svg.append("path")
+          .datum(lineGraphData)
+          .attr("fill", "none")
+          .attr("stroke", "steelblue")
+          .attr("stroke-width", 1.5)
+          .attr("d", line);
+
+        // Thêm trục x
+        svg.append("g")
+          .attr("transform", `translate(0,${height - margin.bottom})`)
+          .call(xAxis);
+
+        // Thêm trục y
+        svg.append("g")
+          .attr("transform", `translate(${margin.left},0)`)
+          .call(yAxis);
+      })
+      .catch(function (error) {
+        console.log("Error:", error);
+      });
+  </script>
+</body>
+</html>
