@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CSV Viewer with D3.js</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+</head>
+<body>
+<h1>Tỷ lệ giới tính đăng ký thành viên siêu thị</h1>
+<div id="csvTable"></div>
+
+<script>
+    // Sử dụng D3.js để đọc và hiển thị dữ liệu từ file CSV
+    d3.csv("./data.csv")
+        .then(function (data) {
+            // Lọc dữ liệu để chỉ chứa các cột "Customer type" có giá trị "Member" và "Gender"
+            const filteredData = data.filter(function (d) {
+                return d["Customer type"] === "Member";
+            }).map(function (d) {
+                return {
+                    "Customer type": d["Customer type"],
+                    Gender: d["Gender"],
+                };
+            });
+
+            // Tính toán số lượng các giá trị của cột "Gender"
+            const countByGender = d3.rollup(
+                filteredData,
+                v => v.length,
+                d => d.Gender
+            );
+
+            // Biến đổi dữ liệu thành mảng các đối tượng
+            const pieChartData = Array.from(countByGender, ([key, value]) => ({ label: key, value }));
+
+            // Kích thước và margin của biểu đồ tròn
+            const width = 400;
+            const height = 400;
+            const margin = 40;
+
+            // Radius của biểu đồ tròn
+            const radius = Math.min(width, height) / 2 - margin;
+
+            // Màu sắc
+            const color = d3.scaleOrdinal()
+                .domain(pieChartData.map(d => d.label))
+                .range(d3.schemeCategory10);
+
+            // Tạo biểu đồ tròn
+            const pie = d3.pie()
+                .value(d => d.value);
+
+            // Tạo đường cắt cho biểu đồ tròn
+            const arc = d3.arc()
+                .innerRadius(0)
+                .outerRadius(radius);
+
+            // Tạo SVG element
+            const svg = d3.select("body")
+                .append("svg")
+                .attr("width", width)
+                .attr("height", height)
+                .append("g")
+                .attr("transform", "translate(" + width / 2 + "," + height / 2 + ")");
+
+            // Tạo các cung cho biểu đồ tròn
+            const arcs = svg.selectAll("arc")
+                .data(pie(pieChartData))
+                .enter()
+                .append("g")
+                .attr("class", "arc");
+
+            // Thêm màu sắc cho các cung
+            arcs.append("path")
+                .attr("fill", d => color(d.data.label))
+                .attr("d", arc);
+
+            // Thêm nhãn cho các cung
+            arcs.append("text")
+                .attr("transform", d => "translate(" + arc.centroid(d) + ")")
+                .attr("text-anchor", "middle")
+                .text(d => d.data.label + ": " + d.data.value);
+        })
+        .catch(function (error) {
+            console.log("Error:", error);
+        });
+</script>
+</body>
+</html>
