@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thống Kê Điểm Rating Theo Giới Tính</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-family: Arial, sans-serif;
+        }
+        .axis text {
+            font-weight: bold; /* Make axis labels bold */
+        }
+        .bar-text {
+            fill: white; /* Color of the text inside bars */
+            text-anchor: middle; /* Center the text horizontally */
+            alignment-baseline: middle; /* Center the text vertically */
+            font-weight: bold; /* Bold text for visibility */
+        }
+    </style>
+    <script src="https://d3js.org/d3.v6.min.js"></script>
+</head>
+<body>
+    <h1 style="text-align: center;">Điểm đánh giá của khách hàng theo giới tính</h1>
+    <div id="chart" style="display: flex; justify-content: center;"></div>
+
+    <svg width="600" height="400"></svg>
+    <script>
+        // Dữ liệu: Điểm rating trung bình theo giới tính
+        const data = [
+            { gender: 'Male', rating: 6.98 },
+            { gender: 'Female', rating: 6.96 }
+        ];
+
+        const svg = d3.select("svg");
+        const margin = { top: 20, right: 60, bottom: 60, left: 60 };
+        const width = +svg.attr("width") - margin.left - margin.right;
+        const height = +svg.attr("height") - margin.top - margin.bottom;
+        const x = d3.scaleBand().rangeRound([0, width]).padding(0.5);
+        const y = d3.scaleLinear().rangeRound([height, 0]).domain([0, 10]);
+
+        const g = svg.append("g")
+                     .attr("transform", `translate(${margin.left},${margin.top})`);
+
+        x.domain(data.map(d => d.gender));
+        y.domain([0, 10]); // Ensure the Y-axis has a maximum value of 10 for consistency
+
+        g.append("g")
+         .attr("class", "axis axis--x")
+         .attr("transform", `translate(0,${height})`)
+         .call(d3.axisBottom(x));
+
+        g.append("g")
+         .attr("class", "axis axis--y")
+         .call(d3.axisLeft(y).ticks(10))
+         .append("text")
+         .attr("transform", "rotate(-90)")
+         .attr("y", 6)
+         .attr("dy", "0.71em")
+         .attr("text-anchor", "end")
+         .text("Điểm Rating");
+
+        g.selectAll(".bar")
+         .data(data)
+         .enter().append("rect")
+         .attr("class", "bar")
+         .attr("x", d => x(d.gender))
+         .attr("y", d => y(d.rating))
+         .attr("width", x.bandwidth())
+         .attr("height", d => height - y(d.rating))
+         .attr("fill", "#aec6cf"); // Pastel blue color for the bars
+
+        // Adding text inside the bars
+        g.selectAll(".bar-text")
+         .data(data)
+         .enter().append("text")
+         .attr("class", "bar-text")
+         .attr("x", d => x(d.gender) + x.bandwidth() / 2)
+         .attr("y", d => y(d.rating) + (height - y(d.rating)) / 2) // Center vertically
+         .text(d => d.rating.toFixed(2)); // Show rating to two decimal places for precision
+    </script>
+</body>
+</html>
