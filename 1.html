@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profit by Product</title>
+    <script src="https://d3js.org/d3.v6.min.js"></script>
+    <style>
+        .tooltip {
+            position: absolute;
+            text-align: center;
+            padding: 6px;
+            font: 12px sans-serif;
+            background: #ccc;
+            border: 1px solid #888;
+            border-radius: 8px;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+    <h1>Profit by Product Line</h1>
+    <div id="chart-container"></div>
+
+    <script>
+        // Kích thước của biểu đồ
+        const width = 600;
+        const height = 400;
+        const margin = { top: 20, right: 20, bottom: 60, left: 40 }; // Đã thêm margin dưới để chứa nhãn
+
+        // Đọc dữ liệu từ file CSV và thực hiện thống kê
+        d3.csv("data.csv").then(function(data) {
+            const profitByProduct = d3.rollup(data, 
+                v => d3.sum(v, d => +d['gross income']), 
+                d => d['Product line']
+            );
+
+            const sortedData = Array.from(profitByProduct, ([key, value]) => ({ key, value })).sort((a, b) => b.value - a.value);
+
+            const mostProfitableProduct = sortedData[0]; // Sản phẩm mang lại nhiều lợi nhuận nhất
+
+            // Hiển thị thông tin về sản phẩm mang lại nhiều lợi nhuận nhất
+            const chartContainer = d3.select("#chart-container");
+            chartContainer.append("p").text(`Most Profitable Product: ${mostProfitableProduct.key}`);
+            chartContainer.append("p").text(`Total Profit: ${mostProfitableProduct.value.toFixed(2)}`);
+
+            // Tạo tooltip
+            const tooltip = d3.select("body").append("div")
+                .attr("class", "tooltip")
+                .style("opacity", 0);
+
+            // Vẽ biểu đồ cột
+            const x = d3.scaleBand()
+                .domain(sortedData.map(d => d.key))
+                .range([margin.left, width - margin.right])
+                .padding(0.2); // Đổi padding thành 0.2 để tạo khoảng trống giữa các cột
+
+            const y = d3.scaleLinear()
+                .domain([0, d3.max(sortedData, d => d.value)])
+                .nice()
+                .range([height - margin.bottom, margin.top]);
+
+            const svg = chartContainer
+                .append("svg")
+                .attr("width", width)
+                .attr("height", height);
+
+            svg.append("g")
+                .attr("fill", "steelblue")
+                .selectAll("rect")
+                .data(sortedData)
+                .join("rect")
+                .attr("x", d => x(d.key))
+                .attr("y", d => y(d.value))
+                .attr("height", d => y(0) - y(d.value))
+                .attr("width", x.bandwidth())
+                .on("mouseover", function(event, d) {
+                    tooltip.transition()
+                        .duration(200)
+                        .style("opacity", .9);
+                    tooltip.html(`<strong>Product Line:</strong> ${d.key}<br><strong>Profit:</strong> ${d.value.toFixed(2)}`)
+                        .style("left", (event.pageX) + "px")
+                        .style("top", (event.pageY - 28) + "px");
+                })
+                .on("mouseout", function(d) {
+                    tooltip.transition()
+                        .duration(500)
+                        .style("opacity", 0);
+                });
+
+            svg.append("g")
+                .attr("transform", `translate(0,${height - margin.bottom})`)
+                .call(d3.axisBottom(x))
+                .selectAll("text")
+                .attr("transform", "rotate(-45)")
+                .style("text-anchor", "end")
+                .attr("dx", "-0.5em") // Dịch nhãn sang trái một chút để tránh chồng chéo
+                .attr("dy", "0.5em") // Dịch nhãn xuống dưới một chút để tránh chồng chéo
+                .text(d => d)
+                .call(wrap, x.bandwidth()); // Gọi hàm wrap để xuống dòng khi cần thiết
+
+            svg.append("g")
+                .attr("transform", `translate(${margin.left},0)`)
+                .call(d3.axisLeft(y).ticks(null, "s"))
+                .append("text")
+                .attr("x", 2)
+                .attr("y", y(y.ticks().pop()) + 0.5)
+                .attr("dy", "0.32em")
+                .attr("fill", "#000")
+                .attr("font-weight", "bold")
+                .attr("text-anchor", "start")
+                .text("Profit");
+        });
+
+        // Hàm để xuống dòng khi cần thiết
+        function wrap(text, width) {
+            text.each(function() {
+                var text = d3.select(this),
+                    words = text.text().split(/\s+/).reverse(),
+                    word,
+                    line = [],
+                    lineNumber = 0,
+                    lineHeight = 1.1, // ems
+                    y = text.attr("y"),
+                    dy = parseFloat(text.attr("dy")),
+                    tspan = text.text(null).append("tspan").attr("x", 0).attr("y", y).attr("dy", dy + "em");
+
+                while (word = words.pop()) {
+                    line.push(word);
+                    tspan.text(line.join(" "));
+                    if (tspan.node().getComputedTextLength() > width) {
+                        line.pop();
+                        tspan.text(line.join(" "));
+                        line = [word];
+                        tspan = text.append("tspan").attr("x", 0).attr("y", y).attr("dy", ++lineNumber * lineHeight + dy + "em").text(word);
+                    }
+                }
+            });
+        }
+    </script>
+</body>
+</html>
