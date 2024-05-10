@@ -11,73 +11,69 @@
     <div id="chart" style="display: flex; justify-content: center;"></div>
 
     <script>
-        // Dữ liệu cho biểu đồ
-        const data = [
-            { product: "Electronic accessories", rating: 6.95 },
-            { product: "Fashion accessories", rating: 6.95 },
-            { product: "Food and beverages", rating: 7.00 },
-            { product: "Health and beauty", rating: 7.08 },
-            { product: "Home and lifestyle", rating: 6.87 },
-            { product: "Sports and travel", rating: 6.82 }
-        ];
+        // Tải dataset từ file CSV
+        d3.csv("data.csv").then(function(data) {
+            // Lọc ra dữ liệu của khách hàng loại 'Member'
+            const memberData = data.filter(d => d['Customer type'] === 'Member');
 
-        // Thiết lập kích thước của canvas / biểu đồ
-        const margin = {top: 50, right: 50, bottom: 100, left: 80},
-              width = 800 - margin.left - margin.right,
-              height = 400 - margin.top - margin.bottom;
+            // Nhóm theo loại hàng và tính điểm rating trung bình
+            const avgRatingByProduct = d3.rollup(memberData,
+                v => d3.mean(v, d => d.Rating),
+                d => d['Product line']);
 
-        // Thiết lập các phạm vi
-        const x = d3.scaleBand().range([0, width]).padding(0.1);
-        const y = d3.scaleLinear().range([height, 0]).domain([0, 10]); // Giới hạn trục Y từ 0 đến 10
+            // Chuyển map thành mảng các đối tượng
+            const avgRatingArray = Array.from(avgRatingByProduct, ([product, rating]) => ({ product, rating }));
 
-        // Thêm đối tượng svg vào phần thân của trang
-        const svg = d3.select("#chart").append("svg")
-            .attr("width", width + margin.left + margin.right)
-            .attr("height", height + margin.top + margin.bottom)
-            .append("g")
-            .attr("transform", 
-                  "translate(" + margin.left + "," + margin.top + ")");
+            // Thiết lập kích thước và phạm vi của canvas / biểu đồ
+            const margin = {top: 50, right: 50, bottom: 100, left: 80},
+                  width = 800 - margin.left - margin.right,
+                  height = 400 - margin.top - margin.bottom;
 
-        // Chia tỷ lệ phạm vi của dữ liệu trong các miền
-        x.domain(data.map(function(d) { return d.product; }));
-        y.domain([0, 10]); // Điều chỉnh trục Y
+            const x = d3.scaleBand().range([0, width]).padding(0.1);
+            const y = d3.scaleLinear().range([height, 0]).domain([0, 10]); // Giới hạn trục Y từ 0 đến 10
 
-        // Thêm các hình chữ nhật cho biểu đồ thanh
-        const bars = svg.selectAll(".bar")
-            .data(data)
-            .enter().append("rect")
-            .attr("class", "bar")
-            .attr("x", function(d) { return x(d.product); })
-            .attr("width", x.bandwidth())
-            .attr("y", function(d) { return y(d.rating); })
-            .attr("height", function(d) { return height - y(d.rating); })
-            .attr("fill", "lightblue");
+            const svg = d3.select("#chart").append("svg")
+                .attr("width", width + margin.left + margin.right)
+                .attr("height", height + margin.top + margin.bottom)
+                .append("g")
+                .attr("transform", 
+                      "translate(" + margin.left + "," + margin.top + ")");
 
-        // Thêm điểm đánh giá vào tâm của mỗi cột
-        svg.selectAll(".text")
-            .data(data)
-            .enter().append("text")
-            .attr("class", "label")
-            .attr("x", (function(d) { return x(d.product) + x.bandwidth() / 2; }))
-            .attr("y", function(d) { return y(d.rating) + (height - y(d.rating)) / 2; })
-            .attr("dy", ".75em")
-            .attr("text-anchor", "middle")
-            .text(function(d) { return d.rating; });
+            x.domain(avgRatingArray.map(d => d.product));
+            y.domain([0, 10]); // Điều chỉnh trục Y
 
-        // Thêm trục X
-        svg.append("g")
-            .attr("transform", "translate(0," + height + ")")
-            .call(d3.axisBottom(x))
-            .selectAll("text")
-            .attr("text-anchor", "end")
-            .attr("dx", "-.8em")
-            .attr("dy", ".15em") // Điều chỉnh vị trí nhãn trục X
-            .attr("transform", "rotate(-65)"); // Xoay nhãn trục X
+            const bars = svg.selectAll(".bar")
+                .data(avgRatingArray)
+                .enter().append("rect")
+                .attr("class", "bar")
+                .attr("x", d => x(d.product))
+                .attr("width", x.bandwidth())
+                .attr("y", d => y(d.rating))
+                .attr("height", d => height - y(d.rating))
+                .attr("fill", "lightblue");
 
-        // Thêm trục Y
-        svg.append("g")
-            .call(d3.axisLeft(y));
+            svg.selectAll(".text")
+                .data(avgRatingArray)
+                .enter().append("text")
+                .attr("class", "label")
+                .attr("x", (d => x(d.product) + x.bandwidth() / 2))
+                .attr("y", d => y(d.rating) + (height - y(d.rating)) / 2)
+                .attr("dy", ".75em")
+                .attr("text-anchor", "middle")
+                .text(d => d.rating.toFixed(2));
 
+            svg.append("g")
+                .attr("transform", "translate(0," + height + ")")
+                .call(d3.axisBottom(x))
+                .selectAll("text")
+                .attr("text-anchor", "end")
+                .attr("dx", "-.8em")
+                .attr("dy", ".15em")
+                .attr("transform", "rotate(-65)");
+
+            svg.append("g")
+                .call(d3.axisLeft(y));
+        });
     </script>
 </body>
 </html>
