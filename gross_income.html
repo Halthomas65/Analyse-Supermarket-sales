@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Branch Gross Income Bar Chart</title>
+  <style>
+    /* Add some basic styling to the chart */
+    #chart {
+      font-family: Arial, sans-serif;
+    }
+
+    .bar {
+      fill: steelblue;
+    }
+
+    .bar:hover {
+      fill: darkblue;
+    }
+
+    .axis text {
+      font-size: 12px;
+    }
+
+    .axis .domain {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <h1>Branch Gross Income Bar Chart</h1>
+  <div id="chart"></div>
+
+  <script src="https://d3js.org/d3.v6.min.js"></script>
+  <script>
+    d3.csv("supermarket_sales - Sheet1.csv").then(function(data) {
+      // Calculate the sum of gross income for each branch
+      const branchData = d3.rollup(data, v => d3.sum(v, d => parseFloat(d['gross income'])), d => d.Branch);
+
+      // Convert the branch data to an array
+      const branchArray = Array.from(branchData, ([branch, sumIncome]) => ({ branch, sumIncome }));
+
+      // Sort the branch array by sum income in descending order
+      branchArray.sort((a, b) => b.sumIncome - a.sumIncome);
+
+      // Set up the chart dimensions
+      const margin = { top: 20, right: 20, bottom: 50, left: 50 };
+      const width = 600 - margin.left - margin.right;
+      const height = 400 - margin.top - margin.bottom;
+
+      // Create the SVG container
+      const svg = d3.select("#chart")
+        .append("svg")
+        .attr("width", width + margin.left + margin.right)
+        .attr("height", height + margin.top + margin.bottom)
+        .append("g")
+        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+      // Set up scales
+      const xScale = d3.scaleBand()
+        .domain(branchArray.map(d => d.branch))
+        .range([0, width])
+        .padding(0.1);
+
+      const yScale = d3.scaleLinear()
+        .domain([0, d3.max(branchArray, d => d.sumIncome)])
+        .range([height, 0]);
+
+      // Create the bars
+      svg.selectAll(".bar")
+        .data(branchArray)
+        .enter()
+        .append("rect")
+        .attr("class", "bar")
+        .attr("x", d => xScale(d.branch))
+        .attr("y", d => yScale(d.sumIncome))
+        .attr("width", xScale.bandwidth())
+        .attr("height", d => height - yScale(d.sumIncome));
+
+      // Add labels to the chart
+      svg.append("g")
+        .attr("transform", "translate(0," + height + ")")
+        .call(d3.axisBottom(xScale));
+
+      svg.append("g")
+        .call(d3.axisLeft(yScale));
+    });
+  </script>
+</body>
+</html>
