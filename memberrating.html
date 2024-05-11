@@ -12,7 +12,7 @@
 
     <script>
         // Tải dataset từ file CSV
-        d3.csv("data.csv").then(function(data) {
+        d3.csv("supermarket_sales.csv").then(function(data) {
             // Lọc ra dữ liệu của khách hàng loại 'Member'
             const memberData = data.filter(d => d['Customer type'] === 'Member');
 

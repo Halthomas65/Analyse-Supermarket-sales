@@ -17,7 +17,7 @@
 
   <script>
     // Sử dụng D3.js để đọc và hiển thị dữ liệu từ file CSV
-    d3.csv("data.csv")
+    d3.csv("supermarket_sales.csv")
       .then(function (data) {
         // Lọc dữ liệu để chỉ chứa cột "Date"
         const dateData = data.map(function (d) {

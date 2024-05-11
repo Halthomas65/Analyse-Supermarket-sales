@@ -29,7 +29,7 @@
         const margin = { top: 20, right: 20, bottom: 60, left: 40 }; // Đã thêm margin dưới để chứa nhãn
 
         // Đọc dữ liệu từ file CSV và thực hiện thống kê
-        d3.csv("data.csv").then(function(data) {
+        d3.csv("supermarket_sales.csv").then(function(data) {
             const profitByProduct = d3.rollup(data, 
                 v => d3.sum(v, d => +d['gross income']), 
                 d => d['Product line']

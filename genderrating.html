@@ -34,7 +34,7 @@
     <svg width="600" height="400"></svg>
     <script>
         // Tải dataset từ file CSV
-        d3.csv("data.csv").then(function(data) {
+        d3.csv("supermarket_sales.csv").then(function(data) {
             // Nhóm theo giới tính và tính điểm rating trung bình
             const avgRatingByGender = d3.rollup(data, 
                 v => d3.mean(v, d => d.Rating), 
