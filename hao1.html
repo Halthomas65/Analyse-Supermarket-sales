@@ -1,20 +1,22 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Best Selling Product</title>
-    <script src="https://d3js.org/d3.v6.min.js"></script>
+    <title>Payment Methods in each branch</title>
+    <!-- Thêm thư viện D3.js -->
+    <script src="https://d3js.org/d3.v7.min.js"></script>
     <style>
-        .tooltip {
-            position: absolute;
-            text-align: center;
-            padding: 6px;
-            font: 12px sans-serif;
-            background: #ccc;
-            border: 1px solid #888;
-            border-radius: 8px;
-            pointer-events: none;
+        /* Thêm CSS để định dạng biểu đồ */
+        .bar {
+            fill-opacity: 0.7;
+        }
+
+        .percentage {
+            fill: white;
+            font-size: 12px;
+            text-anchor: middle;
         }
     </style>
     <style>
@@ -204,6 +206,7 @@
         }
       </style>
 </head>
+
 <body>
     <header class="header">
         <a href="#" class="logo">NHÓM 12</a>
@@ -213,124 +216,136 @@
           <a href="#"></a>
         </nav>
       </header>
-    <h1>Best Selling Product</h1>
-    <div id="chart-container"></div>
+    <h1>Payment Methods in each branch</h1>
+    <!-- Container cho biểu đồ -->
+    <div id="chart"></div>
 
     <script>
-        // Kích thước của biểu đồ
-        const width = 600;
-        const height = 400;
-        const margin = { top: 20, right: 20, bottom: 60, left: 40 };
+        // Đọc dữ liệu từ tập tin CSV
+        d3.csv("supermarket_sales.csv").then(function (data) {
+            // Tạo biểu đồ
+            drawChart(data);
+        });
 
-        // Đọc dữ liệu từ file CSV và thực hiện thống kê
-        d3.csv("supermarket_sales.csv").then(function(data) {
-            const salesByProduct = d3.rollup(data,
-                v => d3.sum(v, d => +d['Quantity']),
-                d => d['Product line']
-            );
+        // Hàm để vẽ biểu đồ
+        function drawChart(data) {
+            // Tạo biến để lưu trữ dữ liệu theo thành phố và phương thức thanh toán
+            var cityPaymentData = {};
 
-            const sortedData = Array.from(salesByProduct, ([key, value]) => ({ key, value })).sort((a, b) => b.value - a.value);
+            // Sắp xếp dữ liệu theo chi nhánh trước
+            data.sort(function (a, b) {
+                return a['Branch'].localeCompare(b['Branch']);
+            });
 
-            const bestSellingProduct = sortedData[0];
+            // Tính tổng số lượng mỗi phương thức thanh toán trong mỗi thành phố
+            data.forEach(function (d) {
+                var city = d['Branch'];
+                var paymentMethod = d['Payment'];
+                if (!cityPaymentData[city]) {
+                    cityPaymentData[city] = { "Ewallet": 0, "Credit card": 0, "Cash": 0 };
+                }
+                cityPaymentData[city][paymentMethod]++;
+            });
+            // Chuyển đổi số lượng thành phần trăm
+            Object.keys(cityPaymentData).forEach(function (city) {
+                var total = cityPaymentData[city]["Ewallet"] + cityPaymentData[city]["Credit card"] + cityPaymentData[city]["Cash"];
+                cityPaymentData[city]["Ewallet"] = (cityPaymentData[city]["Ewallet"] / total) * 100;
+                cityPaymentData[city]["Credit card"] = (cityPaymentData[city]["Credit card"] / total) * 100;
+                cityPaymentData[city]["Cash"] = (cityPaymentData[city]["Cash"] / total) * 100;
+            });
 
-            // Hiển thị thông tin về sản phẩm bán chạy nhất
-            const chartContainer = d3.select("#chart-container");
-            chartContainer.append("p").text(`Best Selling Product: ${bestSellingProduct.key}`);
-            chartContainer.append("p").text(`Total Sales: ${bestSellingProduct.value}`);
+            // Tạo biến cho kích thước biểu đồ
+            var width = 800;
+            var height = 500;
+            var margin = { top: 20, right: 20, bottom: 30, left: 40 };
 
-            // Tạo tooltip
-            const tooltip = d3.select("body").append("div")
-                .attr("class", "tooltip")
-                .style("opacity", 0);
-
-            // Vẽ biểu đồ cột
-            const x = d3.scaleBand()
-                .domain(sortedData.map(d => d.key))
+            // Tạo scale cho trục X (chi nhánh)
+            var x = d3.scaleBand()
+                .domain(Object.keys(cityPaymentData))
                 .range([margin.left, width - margin.right])
-                .padding(0.2);
+                .padding(0.1);
 
-            const y = d3.scaleLinear()
-                .domain([0, d3.max(sortedData, d => d.value)])
+            // Tạo scale cho trục Y (tỉ lệ thanh toán)
+            var y = d3.scaleLinear()
+                .domain([0, 100]) // Tỉ lệ phần trăm
                 .nice()
                 .range([height - margin.bottom, margin.top]);
 
-            const svg = chartContainer
+            // Tạo màu sắc cho từng phương thức thanh toán
+            var color = d3.scaleOrdinal()
+                .domain(["Ewallet", "Credit card", "Cash"])
+                .range(["red", "orange", "green"]);
+
+            // Tạo SVG element
+            var svg = d3.select("#chart")
                 .append("svg")
                 .attr("width", width)
                 .attr("height", height);
 
-            svg.append("g")
-                .attr("fill", "steelblue")
+            // Vẽ các cột cho từng chi nhánh
+            svg.selectAll(".branch")
+                .data(Object.entries(cityPaymentData))
+                .enter().append("g")
+                .attr("class", "branch")
+                .attr("transform", function (d) { return "translate(" + x(d[0]) + ",0)"; })
                 .selectAll("rect")
-                .data(sortedData)
-                .join("rect")
-                .attr("x", d => x(d.key))
-                .attr("y", d => y(d.value))
-                .attr("height", d => y(0) - y(d.value))
-                .attr("width", x.bandwidth())
-                .on("mouseover", function(event, d) {
-                    tooltip.transition()
-                        .duration(200)
-                        .style("opacity", .9);
-                    tooltip.html(`<strong>Product Line:</strong> ${d.key}<br><strong>Sales:</strong> ${d.value}`)
-                        .style("left", (event.pageX) + "px")
-                        .style("top", (event.pageY - 28) + "px");
+                .data(function (d) {
+                    var offset = 0;
+                    return Object.keys(d[1]).map(function (key) {
+                        var obj = { key: key, value: d[1][key], offset: offset };
+                        offset += d[1][key];
+                        return obj;
+                    });
                 })
-                .on("mouseout", function(d) {
-                    tooltip.transition()
-                        .duration(500)
-                        .style("opacity", 0);
+                .enter().append("rect")
+                .attr("class", "bar")
+                .attr("x", 0)
+                .attr("y", function (d) { return y(d.offset + d.value); })
+                .attr("width", x.bandwidth())
+                .attr("height", function (d) { return y(d.offset) - y(d.offset + d.value); })
+                .style("fill", function (d) { return color(d.key); })
+                // Hiển thị phần trăm trên cột
+                .each(function (d) {
+                    var text = d3.select(this.parentNode)
+                        .append("text")
+                        .attr("class", "percentage")
+                        .attr("x", x.bandwidth() / 2)
+                        .attr("y", y(d.offset))
+                        .attr("dy", "-0.5em")
+                        .attr("text-anchor", "middle")
+                        .text(d.value.toFixed(1) + "%");
                 });
 
+            // Tạo trục X
             svg.append("g")
-                .attr("transform", `translate(0,${height - margin.bottom})`)
+                .attr("transform", "translate(0," + (height - margin.bottom) + ")")
                 .call(d3.axisBottom(x))
                 .selectAll("text")
-                .attr("transform", "rotate(-45)")
                 .style("text-anchor", "end")
-                .attr("dx", "-0.5em") // Dịch nhãn sang trái một chút để tránh chồng chéo
-                .attr("dy", "0.5em") // Dịch nhãn xuống dưới một chút để tránh chồng chéo
-                .text(d => d)
-                .call(wrap, x.bandwidth());
+                .attr("transform");
 
+            // Tạo trục Y
             svg.append("g")
-                .attr("transform", `translate(${margin.left},0)`)
-                .call(d3.axisLeft(y).ticks(null, "s"))
-                .append("text")
-                .attr("x", 2)
-                .attr("y", y(y.ticks().pop()) + 0.5)
-                .attr("dy", "0.32em")
-                .attr("fill", "#000")
-                .attr("font-weight", "bold")
-                .attr("text-anchor", "start")
-                .text("Sales");
-        });
+                .attr("transform", "translate(" + margin.left + ",0)")
+                .call(d3.axisLeft(y));
 
-        // Hàm để xuống dòng khi cần thiết
-        function wrap(text, width) {
-            text.each(function() {
-                var text = d3.select(this),
-                    words = text.text().split(/\s+/).reverse(),
-                    word,
-                    line = [],
-                    lineNumber = 0,
-                    lineHeight = 1.1,
-                    y = text.attr("y"),
-                    dy = parseFloat(text.attr("dy")),
-                    tspan = text.text(null).append("tspan").attr("x", 0).attr("y", y).attr("dy", dy + "em");
+            // Thêm nhãn cho trục X
+            svg.append("text")
+                .attr("x", width / 2)
+                .attr("y", height)
+                .style("text-anchor", "middle")
+                .text("City");
 
-                while (word = words.pop()) {
-                    line.push(word);
-                    tspan.text(line.join(" "));
-                    if (tspan.node().getComputedTextLength() > width) {
-                        line.pop();
-                        tspan.text(line.join(" "));
-                        line = [word];
-                        tspan = text.append("tspan").attr("x", 0).attr("y", y).attr("dy", ++lineNumber * lineHeight + dy + "em").text(word);
-                    }
-                }
-            });
+            // Thêm nhãn cho trục Y
+            svg.append("text")
+                .attr("transform", "rotate(-90)")
+                .attr("y", 0)
+                .attr("x", 0 - height / 2)
+                .attr("dy", "1em")
+                .style("text-anchor", "middle")
+                .text("Percentage");
         }
     </script>
 </body>
+
 </html>

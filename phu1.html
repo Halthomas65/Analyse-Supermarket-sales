@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gender Ratio in Supermarket Sales</title>
+    <!-- Thêm thư viện D3.js -->
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+
+    <style>
+        /* Thêm CSS để định dạng biểu đồ */
+        .bar {
+            fill-opacity: 0.7;
+        }
+        table {
+            width: 20%;
+            border-collapse: collapse;
+            position: absolute;
+          }
+          th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+          }
+          th {
+            background-color: #f2f2f2;
+          }
+          .male {
+            background-color: pink;
+          }
+          .female {
+            background-color: blue;
+          }
+        #chart{
+            position: absolute;
+            left: 30%;
+        }
+    </style>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Sriracha&display=swap');
+    
+        body {
+          margin: 0;
+          box-sizing: border-box;
+        }
+    
+        /* CSS for header */
+        .header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          background-color: #f5f5f5;
+        }
+    
+        .header .logo {
+          font-size: 25px;
+          font-family: 'Sriracha', cursive;
+          color: #000;
+          text-decoration: none;
+          margin-left: 30px;
+        }
+    
+        .nav-items {
+          display: flex;
+          justify-content: space-around;
+          align-items: center;
+          background-color: #f5f5f5;
+          margin-right: 20px;
+        }
+    
+        .nav-items a {
+          text-decoration: none;
+          color: #000;
+          padding: 35px 20px;
+        }
+    
+        /* CSS for main element */
+        .intro {
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+          align-items: center;
+          width: 100%;
+          height: 520px;
+          background: linear-gradient(to bottom, rgba(0, 0, 0, 0.5) 0%, rgba(0, 0, 0, 0.5) 100%), url("https://images.unsplash.com/photo-1587620962725-abab7fe55159?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1031&q=80");
+          background-size: cover;
+          background-position: center;
+          background-repeat: no-repeat;
+        }
+    
+        .intro h1 {
+          font-family: sans-serif;
+          font-size: 60px;
+          color: #fff;
+          font-weight: bold;
+          text-transform: uppercase;
+          margin: 0;
+        }
+    
+        .intro p {
+          font-size: 20px;
+          color: #d1d1d1;
+          text-transform: uppercase;
+          margin: 20px 0;
+        }
+    
+        .intro button {
+          background-color: #5edaf0;
+          color: #000;
+          padding: 10px 25px;
+          border: none;
+          border-radius: 5px;
+          font-size: 20px;
+          font-weight: bold;
+          cursor: pointer;
+          box-shadow: 0px 0px 20px rgba(255, 255, 255, 0.4)
+        }
+    
+        .achievements {
+          display: flex;
+          justify-content: space-around;
+          align-items: center;
+          padding: 40px 80px;
+        }
+    
+        .achievements .work {
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+          align-items: center;
+          padding: 0 40px;
+        }
+    
+        .achievements .work i {
+          width: fit-content;
+          font-size: 50px;
+          color: #333333;
+          border-radius: 50%;
+          border: 2px solid #333333;
+          padding: 12px;
+        }
+    
+        .achievements .work .work-heading {
+          font-size: 20px;
+          color: #333333;
+          text-transform: uppercase;
+          margin: 10px 0;
+        }
+    
+        .achievements .work .work-text {
+          font-size: 15px;
+          color: #585858;
+          margin: 10px 0;
+        }
+    
+        .about-me {
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          padding: 40px 80px;
+          border-top: 2px solid #eeeeee;
+        }
+    
+        .about-me img {
+          width: 500px;
+          max-width: 100%;
+          height: auto;
+          border-radius: 10px;
+        }
+    
+        .about-me-text h2 {
+          font-size: 30px;
+          color: #333333;
+          text-transform: uppercase;
+          margin: 0;
+        }
+    
+        .about-me-text p {
+          font-size: 15px;
+          color: #585858;
+          margin: 10px 0;
+        }
+    
+        /* CSS for footer */
+        .footer {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          background-color: #302f49;
+          padding: 40px 80px;
+        }
+    
+        .footer .copy {
+          color: #fff;
+        }
+    
+        .bottom-links {
+          display: flex;
+          justify-content: space-around;
+          align-items: center;
+          padding: 40px 0;
+        }
+    
+        .bottom-links .links {
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+          align-items: center;
+          padding: 0 40px;
+        }
+    
+        .bottom-links .links span {
+          font-size: 20px;
+          color: #fff;
+          text-transform: uppercase;
+          margin: 10px 0;
+        }
+    
+        .bottom-links .links a {
+          text-decoration: none;
+          color: #a1a1a1;
+          padding: 10px 20px;
+        }
+      </style>
+</head>
+<body>
+    <header class="header">
+        <a href="#" class="logo">NHÓM 12</a>
+        <nav class="nav-items">
+          <a href="#"></a>
+          <a href="#"></a>
+          <a href="#"></a>
+        </nav>
+      </header>
+      <main>
+    <h1>Gender Ratio in Supermarket Sales</h1>
+    <table>
+        <thead>
+          <tr>
+            <th>GENDER</th>
+            <th>COLOR</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Male</td>
+            <td class="male"></td>
+          </tr>
+          <tr>
+            <td>Female</td>
+            <td class="female"></td>
+          </tr>
+    
+          <!-- Add more rows as needed -->
+        </tbody>
+      </table>
+    <!-- Container cho biểu đồ -->
+    <div id="chart"></div>
+    </main>
+    <script>
+        // Tạo biến để lưu trữ dữ liệu tính toán
+        var cityData = {};
+
+        // Đọc dữ liệu từ tập tin CSV
+        d3.csv("supermarket_sales.csv").then(function(data) {
+            data.forEach(function(item) {
+                var city = item.City;
+                var gender = item.Gender;
+                if (!cityData[city]) {
+                    cityData[city] = { maleCount: 0, femaleCount: 0 };
+                }
+                if (gender === 'Male') {
+                    cityData[city].maleCount++;
+                } else if (gender === 'Female') {
+                    cityData[city].femaleCount++;
+                }
+            });
+            // Sau khi tính toán xong, vẽ biểu đồ
+            drawChart(cityData);
+        });
+
+        // Hàm để vẽ biểu đồ
+        function drawChart(data) {
+            // Cài đặt kích thước và margin
+            var width = 500;
+            var height = 300;
+            var margin = { top: 20, right: 20, bottom: 30, left: 40 };
+
+            // Tạo SVG element
+            var svg = d3.select("#chart")
+                        .append("svg")
+                        .attr("width", width)
+                        .attr("height", height);
+
+            // Scale cho trục X
+            var x = d3.scaleBand()
+                      .range([margin.left, width - margin.right])
+                      .padding(0.1)
+                      .domain(Object.keys(data));
+
+            // Scale cho trục Y
+            var y = d3.scaleLinear()
+                      .range([height - margin.bottom, margin.top])
+                      .domain([0, d3.max(Object.values(data), function(d) { return d.maleCount + d.femaleCount; })]);
+
+            // Khai báo biến để theo dõi xem tooltip đã được hiển thị hay không
+var tooltipShown = false;
+
+// Vẽ cột cho nam
+svg.selectAll(".male-bar")
+   .data(Object.entries(data))
+   .enter().append("rect")
+   .attr("class", "male-bar")
+   .style("fill", "blue")
+   .attr("x", function(d) { return x(d[0]); })
+   .attr("y", function(d) { return y(d[1].maleCount); })
+   .attr("width", x.bandwidth() / 2)
+   .attr("height", function(d) { return height - margin.bottom - y(d[1].maleCount); })
+   .on("mouseover", function(d) {
+       d3.select(this)
+         .transition()
+         .duration(300)
+         .attr("y", function(d) { return y(d[1].maleCount) - 10; }) // Di chuyển cột lên
+         .style("fill", "orange"); // Đổi màu cột khi di chuột vào
+
+       // Hiển thị số lượng nam
+       svg.append("text")
+          .attr("class", "male-text")
+          .attr("x", parseFloat(d3.select(this).attr("x")) + parseFloat(d3.select(this).attr("width")) / 2)
+          .attr("y", parseFloat(d3.select(this).attr("y")) - 5)
+          .attr("text-anchor", "middle")
+          .text("Male: " + d[1].maleCount);
+   })
+   .on("mouseout", function() {
+       d3.select(this)
+         .transition()
+         .duration(300)
+         .attr("y", function(d) { return y(d[1].maleCount); }) // Trả lại vị trí ban đầu của cột
+         .style("fill", "blue"); // Đổi màu cột khi di chuột ra
+
+       // Xóa văn bản số lượng nam khi di chuột ra khỏi cột
+   })
+   .transition() // Thêm animation
+   .duration(800)
+   .delay(function (d, i) {
+       return i * 100; // Delay cho mỗi cột
+});
+
+// Vẽ cột cho nữ
+svg.selectAll(".female-bar")
+   .data(Object.entries(data))
+   .enter().append("rect")
+   .attr("class", "female-bar")
+   .style("fill", "pink")
+   .attr("x", function(d) { return x(d[0]) + x.bandwidth() / 2; })
+   .attr("y", function(d) { return y(d[1].femaleCount); })
+   .attr("width", x.bandwidth() / 2)
+   .attr("height", function(d) { return height - margin.bottom - y(d[1].femaleCount); })
+   .on("mouseover", function(d) {
+       d3.select(this)
+         .transition()
+         .duration(300)
+         .attr("y", function(d) { return y(d[1].femaleCount) - 10; }) // Di chuyển cột lên
+         .style("fill", "orange"); // Đổi màu cột khi di chuột vào
+
+       // Hiển thị số lượng nữ
+     
+   })
+   .on("mouseout", function() {
+       d3.select(this)
+         .transition()
+         .duration(300)
+         .attr("y", function(d) { return y(d[1].femaleCount); }) // Trả lại vị trí ban đầu của cột
+         .style("fill", "pink"); // Đổi màu cột khi di chuột ra
+
+       // Xóa văn bản số lượng nữ khi di chuột ra khỏi cột
+   })
+   .transition() // Thêm animation
+   .duration(800)
+   .delay(function (d, i) {
+       return i * 100; // Delay cho mỗi cột
+});
+// Tạo nhóm cho các phần tử text của nam và hiển thị ngay từ đầu
+var maleTexts = svg.selectAll(".male-text")
+    .data(Object.entries(data))
+    .enter().append("text")
+    .attr("class", "male-text")
+    .attr("x", function(d) { return x(d[0]) + x.bandwidth() / 4; }) // Đặt x ở giữa của cột nam
+    .attr("y", function(d) { return y(d[1].maleCount) - 5; }) // Đặt y ở phía trên cột nam
+    .attr("text-anchor", "middle")
+    .text(function(d) { return d[1].maleCount; }) // Hiển thị số lượng nam
+    .style("visibility", "visible"); // Hiển thị phần tử text của nam ngay từ đầu
+
+// Tạo nhóm cho các phần tử text của nữ và hiển thị ngay từ đầu
+var femaleTexts = svg.selectAll(".female-text")
+    .data(Object.entries(data))
+    .enter().append("text")
+    .attr("class", "female-text")
+    .attr("x", function(d) { return x(d[0]) + 3 * x.bandwidth() / 4; }) // Đặt x ở giữa của cột nữ
+    .attr("y", function(d) { return y(d[1].femaleCount) - 5; }) // Đặt y ở phía trên cột nữ
+    .attr("text-anchor", "middle")
+    .text(function(d) { return d[1].femaleCount; }) // Hiển thị số lượng nữ
+    .style("visibility", "visible"); // Hiển thị phần tử text của nữ ngay từ đầu
+
+
+
+            // Tạo trục X
+            svg.append("g")
+               .attr("transform", "translate(0," + (height - margin.bottom) + ")")
+               .call(d3.axisBottom(x));
+
+            // Tạo trục Y
+            svg.append("g")
+               .attr("transform", "translate(" + margin.left + ",0)")
+               .call(d3.axisLeft(y));
+
+            // Thêm nhãn cho trục X
+            svg.append("text")
+               .attr("x", width / 2)
+               .attr("y", height)
+               .style("text-anchor", "middle")
+               .text("City");
+
+            // Thêm nhãn cho trục Y
+            svg.append("text")
+               .attr("transform", "rotate(-90)")
+               .attr("y", 0)
+               .attr("x", 0 - height / 2)
+               .attr("dy", "1em")
+               .style("text-anchor", "middle")
+               .text("Number of Customers");
+        }
+    </script>
+</body>
+</html>

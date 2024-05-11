@@ -1,29 +1,12 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
+
 <head>
-  <title>Branch Gross Income Bar Chart</title>
-  <style>
-    /* Add some basic styling to the chart */
-    #chart {
-      font-family: Arial, sans-serif;
-    }
-
-    .bar {
-      fill: steelblue;
-    }
-
-    .bar:hover {
-      fill: darkblue;
-    }
-
-    .axis text {
-      font-size: 12px;
-    }
-
-    .axis .domain {
-      display: none;
-    }
-  </style>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Simple HTML HomePage</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Sriracha&display=swap');
 
@@ -117,6 +100,7 @@
       justify-content: center;
       align-items: center;
       padding: 0 40px;
+      width:  40em;
     }
 
     .achievements .work i {
@@ -211,72 +195,126 @@
     }
   </style>
 </head>
+
 <body>
   <header class="header">
-    <a href="#" class="logo">NHÓM 12</a>
+    <a href="#" class="logo">NHÓM 13</a>
     <nav class="nav-items">
       <a href="#"></a>
       <a href="#"></a>
       <a href="#"></a>
     </nav>
   </header>
-  <h1>Branch Gross Income Rating</h1>
-  <div id="chart"></div>
+  <main>
+    <div class="intro">
+      <h1>Đồ án thực hành</h1>
+      <p>Trực quan hóa dữ liệu</p>
+      <button>Learn More</button>
+    </div>
+    <div id="content"></div>
+    <div class="achievements">
+      <div class="work">
+        <a href="hao1.html"> <i class="fas fa-atom"></i></a>
+        <p class="work-heading">HÀO</p>
+        <p class="work-text">Phương thức thanh toán nào phổ biến nhất trong các chi nhánh?</p>
+      </div>
+      <div class="work">
+        
+        <a href="gross_income.html"> <i class="fas fa-skiing"></i></a>
+        <p class="work-heading">HÀO</p>
+        <p class="work-text">Xếp hạng doanh thu của các chi nhánh</p>
+      </div>
+      
+    </div>
+	
+	<div class="achievements">
+		<div class="work">
+        <a href="phu1.html"><i class="fas fa-atom"></i></a>
+		  
+		  <p class="work-heading">PHÚ</p>
+		  <p class="work-text">Thống kê số lượng nam nữ mua hàng ở các chi nhánh</p>
+		</div>
+		<div class="work">
+            <a href="phu2.html">		  <i class="fas fa-skiing"></i>
+            </a>
+		  <p class="work-heading">PHÚ</p>
+		  <p class="work-text">Mặc hàng được đánh giá cao nhất và thấp nhất trong các chi nhánh</p>
+		</div>
+		
+	  </div>
 
-  <script src="https://d3js.org/d3.v6.min.js"></script>
-  <script>
-    d3.csv("supermarket_sales.csv").then(function(data) {
-      // Calculate the sum of gross income for each branch
-      const branchData = d3.rollup(data, v => d3.sum(v, d => parseFloat(d['gross income'])), d => d.Branch);
 
-      // Convert the branch data to an array
-      const branchArray = Array.from(branchData, ([branch, sumIncome]) => ({ branch, sumIncome }));
+	  <div class="achievements">
+		<div class="work">
+            <a href="time.html"><i class="fas fa-atom"></i></a>
+		  
+		  <p class="work-heading">PHÚC</p>
+		  <p class="work-text">Thống kê thời gian cao điểm của siêu thị</p>
+		</div>
+		<div class="work">
+            <a href="gender.html">  <i class="fas fa-skiing"></i></a>
+		
+		  <p class="work-heading">PHÚC</p>
+		  <p class="work-text">Tỷ lệ Giới tính đăng ký thành viên siêu thị</p>
+		</div>
+		
+	  </div>
 
-      // Sort the branch array by sum income in descending order
-      branchArray.sort((a, b) => b.sumIncome - a.sumIncome);
+	  <div class="achievements">
+		<div class="work">
+            <a href="profit.html">  <i class="fas fa-atom"></i></a>
+		
+		  <p class="work-heading">NAM</p>
+		  <p class="work-text">Loại sản phẩm nào mang lại nhiều lợi nhuận? (câu 1)</p>
+		</div>
+		<div class="work">
+            <a href="bestselling.html"> <i class="fas fa-skiing"></i></a>
+		 
+		  <p class="work-heading">NAM</p>
+		  <p class="work-text">Loại sản phẩm nào bán chạy nhất trong tất cả các chi nhánh? (câu 2)</p>
+		</div>
+		
+	  </div>
 
-      // Set up the chart dimensions
-      const margin = { top: 20, right: 20, bottom: 50, left: 50 };
-      const width = 600 - margin.left - margin.right;
-      const height = 400 - margin.top - margin.bottom;
+	  <div class="achievements">
+		<div class="work">
+            <a href="memberrating.html">		  <i class="fas fa-atom"></i>            </a>
+		  <p class="work-heading">NHÂN</p>
+		  <p class="work-text">Thống kê các loại hàng được rating cao bởi Member</p>
+		</div>
+		<div class="work">
+            <a href="genderrating.html">	  <i class="fas fa-skiing"></i></a>
+		  <p class="work-heading">NHÂN</p>
+		  <p class="work-text">Thống kê điểm Rating của Male và Female</p>
+		</div>
+		
+	  </div>
 
-      // Create the SVG container
-      const svg = d3.select("#chart")
-        .append("svg")
-        .attr("width", width + margin.left + margin.right)
-        .attr("height", height + margin.top + margin.bottom)
-        .append("g")
-        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-      // Set up scales
-      const xScale = d3.scaleBand()
-        .domain(branchArray.map(d => d.branch))
-        .range([0, width])
-        .padding(0.1);
 
-      const yScale = d3.scaleLinear()
-        .domain([0, d3.max(branchArray, d => d.sumIncome)])
-        .range([height, 0]);
 
-      // Create the bars
-      svg.selectAll(".bar")
-        .data(branchArray)
-        .enter()
-        .append("rect")
-        .attr("class", "bar")
-        .attr("x", d => xScale(d.branch))
-        .attr("y", d => yScale(d.sumIncome))
-        .attr("width", xScale.bandwidth())
-        .attr("height", d => height - yScale(d.sumIncome));
 
-      // Add labels to the chart
-      svg.append("g")
-        .attr("transform", "translate(0," + height + ")")
-        .call(d3.axisBottom(xScale));
-
-      svg.append("g")
-        .call(d3.axisLeft(yScale));
+    <div class="about-me">
+      <div class="about-me-text">
+        <h2>About Me</h2>
+        <p>Đồ án thực hành môn trực quan hóa dữ liệu Nhóm 13 với 5 thành viên Hào, Phú, Phúc, Nhân, Nam</p>
+      </div>
+      <img src="https://www.ajsnetworking.com/wp-content/uploads/2021/01/datacenter-scaled.jpeg" alt="me">
+    </div>
+  </main>
+ 
+</body>
+<script>
+    // Lấy phần tử nút "Learn More"
+    const learnMoreButton = document.querySelector('button');
+  
+    // Lấy phần tử content
+    const contentSection = document.getElementById('content');
+  
+    // Định nghĩa hành động khi nút được nhấn
+    learnMoreButton.addEventListener('click', () => {
+      // Sử dụng hàm scrollIntoView để kéo xuống phần content
+      contentSection.scrollIntoView({ behavior: 'smooth' });
     });
   </script>
-</body>
 </html>
